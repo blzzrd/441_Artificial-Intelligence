@@ -18,7 +18,7 @@ class world(object):
         self.dirt_piles = dirt_piles
 
         # MURPHY'S LAW.
-        self.murphy = murphy 
+        self.murphy = MURPHY
 
 
     def setup(self):
@@ -27,11 +27,10 @@ class world(object):
             randx = np.random.randint(3)
             randy = np.random.randint(3)
 
-            if self.map.getitem(3*x+y) == 0:
+            if self.map[randx][randy] == 0:
                 dirt -= 1
-                self.map.setitem((x,y),1)
+                self.map.__setitem__((randx,randy),1)
 
-        print(self.map)
 
     def isclean(self):
         if self.dirt_piles > 0:
@@ -39,7 +38,7 @@ class world(object):
         return True
 
     def check(self, x, y):
-        b = self.map.getitem(3*x+y) 
+        b = self.map[x][y]
         if self.murphy:
             a = np.random.randint(100)
             if a < 10:
@@ -48,11 +47,11 @@ class world(object):
 
     def clean(self, x, y):
         if self.murphy:
-            x = np.random.randint(100)
-            if x > 74:
+            z = np.random.randint(100)
+            if z > 74:
                 return
                 
-        self.map.setitem((x,y),0)
+        self.map[x][y] = 0
         self.dirt_piles -= 1
         return
 
@@ -62,13 +61,13 @@ class vacuum(object):
     def __init__(self, randomBool, world):
         self.env = world
         self.random = randomBool
-        self.curloc = (0,0) # current location
+        self.curloc = [0,0] # current location
         self.moves = 0
 
 
     def act(self):
         while self.env.isclean() == False:
-            if self.random:
+            if self.random == True:
                 x = np.random.randint(6)
                 if x == 0:
                     self.left()
@@ -83,7 +82,7 @@ class vacuum(object):
                 elif x == 5:
                     self.nothing()
             else:
-                x = self.env.check(curloc[0], curloc[1]) 
+                x = self.env.check(self.curloc[0], self.curloc[1]) 
                 if x == 1:
                     self.suck()
                     continue
@@ -97,25 +96,25 @@ class vacuum(object):
                 """
 
 
-                if self.curloc == (0,0):
+                if self.curloc == [0,0]:
                     self.down()
                     self.right()
                     self.moves -= 1
-                elif self.curloc == (0,1):
+                elif self.curloc == [1,0]:
+                    self.up()
+                elif self.curloc == [2,0]:
+                    self.up()
+                elif self.curloc == [0,1]:
                     self.right()
-                elif self.curloc == (0,2):
-                    self.down()
-                elif self.curloc == (1,0):
+                elif self.curloc == [1,1]:
                     self.up()
-                elif self.curloc == (1,1):
-                    self.up()
-                elif self.curloc == (1,2):
-                    self.down()
-                elif self.curloc == (2,0):
-                    self.up()
-                elif self.curloc == (2,1):
+                elif self.curloc == [2,1]:
                     self.left()
-                elif self.curloc == (2,2):
+                elif self.curloc == [0,2]:
+                    self.down()
+                elif self.curloc == [1,2]:
+                    self.down()
+                elif self.curloc == [2,2]:
                     self.left()
 
     
@@ -130,33 +129,34 @@ class vacuum(object):
     def setup(self):
         randx = np.random.randint(3)
         randy = np.random.randint(3)
+        self.curloc = [randx, randy]
 
 
     """ Actions """
 
     def left(self):
         self.moves += 1
-        if curloc[0] > 0:
-            curloc[0] -= 1
+        if self.curloc[1] > 0:
+            self.curloc[1] -= 1
 
     def up(self):
         self.moves += 1
-        if curloc[0] > 0:
-            curloc[0] -= 1
+        if self.curloc[0] > 0:
+            self.curloc[0] -= 1
 
     def right(self):
         self.moves += 1
-        if curloc[0] > 0:
-            curloc[0] -= 1
+        if self.curloc[1] < 2:
+            self.curloc[1] += 1
 
     def down(self):
         self.moves += 1
-        if curloc[0] > 0:
-            curloc[0] -= 1
+        if self.curloc[0] < 2:
+            self.curloc[0] += 1
 
     def suck(self):
         self.moves += 1 
-        self.env.clean(curloc[0], curloc[1])
+        self.env.clean(self.curloc[0], self.curloc[1])
        
 
     def nothing(self):
